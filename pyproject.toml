@@ -1,0 +1,19 @@
+[project]
+name = "adhd-brain-dump"
+version = "0.1.0"
+description = "Local-first CLI to capture ADHD brain dumps, sort by energy and urgency, and export next-action sheets."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Asdale Dynamics, LLC" }]
+license = { text = "MIT" }
+keywords = ["adhd", "productivity", "cli", "local-first"]
+
+[project.scripts]
+adhd-dump = "adhd_dump.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["adhd_dump"]
