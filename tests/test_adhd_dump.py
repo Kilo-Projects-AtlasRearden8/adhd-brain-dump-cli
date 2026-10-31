@@ -156,6 +156,60 @@ class SortTests(unittest.TestCase):
         self.assertNotIn("done", out)
 
 
+class LifecycleTests(unittest.TestCase):
+    def _make_store(self, tmp):
+        path = os.path.join(tmp, "store.json")
+        return JSONStore(path)
+
+    def test_mark_done_by_prefix(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = self._make_store(tmp)
+            store.add(Item(id="abc123456789", title="one", energy="high", urgency="high"))
+            store.add(Item(id="def987654321", title="two", energy="low", urgency="low"))
+            out = run(["--data-file", store.path, "done", "abc12345"], store=store)
+        self.assertIn("marked", out)
+        self.assertTrue(store.find("abc123456789").done)
+        self.assertFalse(store.find("def987654321").done)
+
+    def test_mark_done_already_done(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = self._make_store(tmp)
+            item = Item(id="abc123456789", title="one", energy="high", urgency="high")
+            item.done = True
+            store.add(item)
+            out = run(["--data-file", store.path, "done", "abc12345"], store=store)
+        self.assertIn("already done", out)
+
+    def test_mark_done_not_found(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = self._make_store(tmp)
+            store.add(Item(id="abc123456789", title="one", energy="high", urgency="high"))
+            out = run(["--data-file", store.path, "done", "nope"], store=store)
+        self.assertIn("not found", out)
+
+    def test_mark_done_ambiguous_prefix(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = self._make_store(tmp)
+            store.add(Item(id="abc1111", title="one", energy="high", urgency="high"))
+            store.add(Item(id="abc2222", title="two", energy="low", urgency="low"))
+            out = run(["--data-file", store.path, "done", "abc"], store=store)
+        self.assertIn("ambiguous", out)
+
+    def test_remove_by_prefix(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = self._make_store(tmp)
+            store.add(Item(id="abc123456789", title="one", energy="high", urgency="high"))
+            out = run(["--data-file", store.path, "rm", "abc12345"], store=store)
+        self.assertIn("removed", out)
+        self.assertIsNone(store.find("abc123456789"))
+
+    def test_remove_not_found(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = self._make_store(tmp)
+            out = run(["--data-file", store.path, "rm", "nope"], store=store)
+        self.assertIn("not found", out)
+
+
 class ExportTests(unittest.TestCase):
     def test_export_contains_items(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -180,10 +234,10 @@ class ExportTests(unittest.TestCase):
             path = os.path.join(tmp, "store.json")
             out = os.path.join(tmp, "sheet.txt")
             store = JSONStore(path)
-        store.add(Item(id="1", title="task one", energy="low", urgency="high"))
-        result = run(["--data-file", store.path, "export", "--out", out], store=store)
-        self.assertTrue(os.path.exists(out))
-        self.assertIn("exported", result)
+            store.add(Item(id="1", title="task one", energy="low", urgency="high"))
+            result = run(["--data-file", store.path, "export", "--out", out], store=store)
+            self.assertTrue(os.path.exists(out))
+            self.assertIn("exported", result)
 
 
 if __name__ == "__main__":

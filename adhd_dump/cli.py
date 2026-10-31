@@ -6,8 +6,6 @@ import argparse
 import os
 import sys
 import uuid
-from contextlib import redirect_stdout
-from io import StringIO
 
 from .models import Item, VALID_ENERGY, VALID_URGENCY
 from .storage import JSONStore, StorageError
@@ -81,8 +79,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def os_env_data_file() -> str:
-    import os
-
     return os.environ.get("ADHD_DUMP_DATA_FILE", DEFAULT_PATH)
 
 
@@ -155,13 +151,19 @@ def cmd_next(args, store: JSONStore) -> str:
 
 
 def cmd_done(args, store: JSONStore) -> str:
-    if store.mark_done(args.id):
+    full_id = store.resolve_id(args.id)
+    if full_id is None:
+        return f"error: item {args.id[:8]} not found or ambiguous"
+    if store.mark_done(full_id):
         return f"marked {args.id[:8]} done"
-    return f"error: item {args.id[:8]} not found or already done"
+    return f"error: item {args.id[:8]} already done"
 
 
 def cmd_rm(args, store: JSONStore) -> str:
-    if store.remove(args.id):
+    full_id = store.resolve_id(args.id)
+    if full_id is None:
+        return f"error: item {args.id[:8]} not found or ambiguous"
+    if store.remove(full_id):
         return f"removed {args.id[:8]}"
     return f"error: item {args.id[:8]} not found"
 

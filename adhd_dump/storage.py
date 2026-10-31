@@ -68,17 +68,35 @@ class JSONStore:
         return list(self.load())
 
     def find(self, item_id: str) -> Item | None:
-        for item in self.load():
+        self.load()
+        for item in self._items:
             if item.id == item_id:
                 return item
+        return None
+
+    def resolve_id(self, item_id: str) -> str | None:
+        """Resolve a full id or an unambiguous id prefix to the full id.
+
+        Returns None when no item matches or when the prefix is ambiguous
+        (matches more than one item).
+        """
+        self.load()
+        for item in self._items:
+            if item.id == item_id:
+                return item.id
+        matches = [item.id for item in self._items if item.id.startswith(item_id)]
+        if len(matches) == 1:
+            return matches[0]
         return None
 
     def mark_done(self, item_id: str) -> bool:
         from datetime import datetime, timezone
 
-        self.load()
+        full_id = self.resolve_id(item_id)
+        if full_id is None:
+            return False
         for item in self._items:
-            if item.id == item_id and not item.done:
+            if item.id == full_id and not item.done:
                 item.done = True
                 item.done_at = datetime.now(timezone.utc).isoformat()
                 self.save(self._items)
@@ -86,9 +104,11 @@ class JSONStore:
         return False
 
     def remove(self, item_id: str) -> bool:
-        self.load()
+        full_id = self.resolve_id(item_id)
+        if full_id is None:
+            return False
         for index, item in enumerate(self._items):
-            if item.id == item_id:
+            if item.id == full_id:
                 del self._items[index]
                 self.save(self._items)
                 return True

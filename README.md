@@ -1,22 +1,31 @@
 # adhd-brain-dump
 
-Local-first Python CLI to capture ADHD brain dumps, sort items by energy level
-and urgency, and export a simple printable next-action list. Everything is
-stored in a local JSON file — no accounts, no network, no secrets.
+A gentle, local-first Python CLI for capturing ADHD brain dumps, sorting them by
+energy level and urgency, and exporting a simple printable next-action list.
 
-Built and maintained by [Asdale Dynamics, LLC](https://dylanasdale.github.io),
-Dylan Asdale's Indiana LLC (formed October 2026). Beginner-friendly, local-first
-tools for accessible life-admin and low-energy productivity.
+Everything stays on your machine in a single JSON file — no accounts, no network,
+no secrets. Built for the days when a long raw list feels overwhelming and you
+just need to know the one small thing to do next.
 
-## Why this exists
+Made by [Asdale Dynamics, LLC](https://dylanasdale.github.io), Dylan Asdale's
+Indiana LLC (formed October 2026). Dylan is a registered nurse turned AI author
+whose book *The Massive AI Manual* and hub site explain AI "like a friend would":
+plain English, step by step, never condescending. This tool is part of the LLC's
+accessible life-admin and low-energy productivity work.
 
-Brain dumps get everything out of your head, but a long raw list is overwhelming
-when your energy is low. This tool captures items as they come to you, then sorts
-them by **urgency first, then energy level**, so you can pick the next action that
-matches what you actually have the energy for right now. Includes a low-energy
-mode and printable sheets you can tape to the wall.
+## What it does
+
+1. **Capture** a thought as it comes to you, with energy, urgency, tags, and notes.
+2. **Sort** your items by urgency (high first), then energy (high first), so the
+   most pressing, doable thing floats to the top.
+3. **Next action** — see just the top few items that match the energy you have
+   right now, including a dedicated low-energy mode.
+4. **Export** a printable checkbox sheet (plain text or Markdown) you can tape to
+   the wall or print for a low-distraction day.
 
 ## Install
+
+No third-party dependencies — Python standard library only (Python 3.9+).
 
 ```bash
 git clone <this repo>
@@ -24,21 +33,20 @@ cd adhd-brain-dump-cli
 pip install -e .
 ```
 
-No third-party dependencies — Python standard library only (Python 3.9+).
-
 Or run without installing:
 
 ```bash
-python -m adhd_dump --help
+python3 -m adhd_dump --help
 ```
 
 ## Quick start
 
-Capture a thought:
+Capture a few thoughts:
 
 ```bash
 adhd-dump capture "call mom" --energy low --urgency high --tags family
-adhd-dump capture "deploy the site" --energy high --urgency medium
+adhd-dump capture "email the client" --energy medium --urgency medium --tags work
+adhd-dump capture "review the contract" --energy high --urgency high --tags work
 ```
 
 See what's next, sorted by urgency then energy:
@@ -47,60 +55,63 @@ See what's next, sorted by urgency then energy:
 adhd-dump next
 ```
 
-Low-energy day? Only show things you can do when tired:
+Having a low-energy day? Show only the things you can do when you're tired:
 
 ```bash
 adhd-dump next --low-energy
 ```
 
-List everything:
+List everything you've captured:
 
 ```bash
 adhd-dump list
 ```
 
-Mark an item done (use the first 8 chars of the id):
+Mark something done (use the first 8 characters of the id shown in `list`):
 
 ```bash
-adhd-dump done <id>
+adhd-dump done c916758a
 ```
 
-Export a printable sheet:
+Export a printable next-action sheet:
 
 ```bash
 adhd-dump export --out next-actions.txt
 adhd-dump export --format md --out next-actions.md --low-energy --undone
 ```
 
-Store location defaults to `brain_dump.json` in the current folder. Override with
+The store defaults to `brain_dump.json` in the current folder. Change it with
 `ADHD_DUMP_DATA_FILE=/path/to/store.json`.
 
 ## Commands
 
-| Command | Purpose |
-|---------|---------|
-| `capture TITLE` | Add a brain-dump item |
-| `list` | List items (open by default) |
+| Command | What it does |
+|---------|--------------|
+| `capture TITLE` | Add a new brain-dump item |
+| `list` | Show captured items (open ones by default) |
 | `sort` | Print items sorted by urgency, then energy |
-| `next` | Top next-action items (default limit: 5) |
-| `done ID` | Mark an item done |
-| `rm ID` | Remove an item |
+| `next` | Top next-action items (default: 5) |
+| `done ID` | Mark an item done (full id or first 8 chars) |
+| `rm ID` | Remove an item (full id or first 8 chars) |
 | `export` | Printable next-action sheet (`text` or `md`) |
 
-Options: `--energy low\|medium\|high`, `--urgency low\|medium\|high`,
+Common options: `--energy low, medium, high`, `--urgency low, medium, high`,
 `--tags a,b,c`, `--notes "..."`, `--undone`, `--low-energy`, `--limit N`,
-`--format text\|md`, `--out FILE`.
+`--format text, md`, `--out FILE`.
 
 ## Sorting
 
 Items are ordered by urgency (high → medium → low), then energy level
-(high → medium → low), then oldest first. Done items are hidden by default.
+(high → medium → low), then oldest first. Done items are hidden by default so
+your list stays short and useful.
 
 ## Tests
 
 ```bash
-python -m unittest discover -s tests -v
+python3 -m unittest discover -s tests -v
 ```
+
+24 tests cover capture, storage, sorting, export, and marking/removing items.
 
 ## License
 
