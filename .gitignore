@@ -1,4 +1,10 @@
-__pycache__/
 *.py[cod]
-brain_dump.json
+*.pyc
 .adhd_dump/
+.env
+.env.*
+.venv/
+__pycache__/
+brain_dump.json
+dist/*.tmp
+node_modules/
